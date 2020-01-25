@@ -2,26 +2,29 @@ import kopf
 import kubernetes.client
 from kubernetes.client.rest import ApiException
 import yaml
-from pprint import pprint
+import random
 
 @kopf.on.create('baeke.info', 'v1', 'demowebs')
 def create_fn(spec, **kwargs):
-
+    name = kwargs["body"]["metadata"]["name"]
+    print("Name is %s\n" % name)
     # Create the pod spec
     doc = yaml.safe_load(f"""
         apiVersion: apps/v1
         kind: Deployment
         metadata:
-          name: demoweb
+          name: {name}-deployment
+          labels:
+            app: {name}
         spec:
           replicas: {spec.get('replicas', 1)}
           selector:
             matchLabels:
-              app: demoweb
+              app: {name}
           template:
             metadata:
               labels:
-                app: demoweb
+                app: {name}
             spec:
               containers:
               - name: nginx
@@ -30,7 +33,7 @@ def create_fn(spec, **kwargs):
                 - containerPort: 80
                 volumeMounts:
                 - name: workdir
-                  mountPath: '/usr/share/nginx/html'
+                  mountPath: /usr/share/nginx/html
               initContainers:
               - name: install
                 image: alpine/git
@@ -38,10 +41,10 @@ def create_fn(spec, **kwargs):
                 - git
                 - clone
                 - {spec.get('gitrepo', 'https://github.com/gbaeke/static-web.git')}
-                - "/work-dir"
+                - /work-dir
                 volumeMounts:
                 - name: workdir
-                  mountPath: '/work-dir'
+                  mountPath: /work-dir
               dnsPolicy: Default
               volumes:
               - name: workdir
@@ -55,7 +58,6 @@ def create_fn(spec, **kwargs):
     api = kubernetes.client.AppsV1Api()
     try:
       depl = api.create_namespaced_deployment(namespace=doc['metadata']['namespace'], body=doc)
-      pprint(depl)
       # Update the parent's status.
       return {'children': [depl.metadata.uid]}
     except ApiException as e:

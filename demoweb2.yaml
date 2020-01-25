@@ -1,7 +1,7 @@
 apiVersion: baeke.info/v1
 kind: DemoWeb
 metadata:
-  name: demoweb1
+  name: demoweb2
 spec:
   replicas: 2
   gitrepo: "https://github.com/gbaeke/static-web.git"

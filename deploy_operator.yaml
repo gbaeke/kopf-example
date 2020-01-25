@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demowebs-operator
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      application: demowebs-operator
+  template:
+    metadata:
+      labels:
+        application: demowebs-operator
+    spec:
+      serviceAccountName: demowebs-account
+      containers:
+      - name: demowebs
+        image: gbaeke/kopf-demoweb
