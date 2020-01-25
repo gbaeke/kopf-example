@@ -1,0 +1,29 @@
+# A simple CRD to deploy a demo website from a git repo
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: demowebs.baeke.info
+spec:
+  scope: Namespaced
+  group: baeke.info
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  names:
+    kind: DemoWeb
+    plural: demowebs
+    singular: demoweb
+    shortNames:
+      - dweb
+  additionalPrinterColumns:
+    - name: Replicas
+      type: string
+      priority: 0
+      JSONPath: .spec.replicas
+      description: Amount of replicas
+    - name: GitRepo
+      type: string
+      priority: 0
+      JSONPath: .spec.gitrepo
+      description: Git repository with web content
